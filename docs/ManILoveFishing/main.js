@@ -1,9 +1,13 @@
-title = "I Love Fishing";
+title = "Piranha Fishing";
 
 description = `
 Hold to cast,
-release to
-reel in
+let go to reel
+in. Touch bottom
+line to get
+points. If you
+touch 3 fish,
+you lose.
 `;
 
 characters = [
@@ -45,10 +49,12 @@ const G = {
 
   ROD_LENGTH: 7,
   ROD_EXTEND_SPEED: 1.5,
-  ROD_RETRACT_SPEED: 0.5,
+  ROD_RETRACT_SPEED: 0.9,
 
   FISH_LEVELS: [70, 100, 130],
   FISH_MAX_DELTA_X: 40,
+
+  FAILS: 0,
 };
 
 options = {
@@ -147,7 +153,7 @@ function update() {
       end: vec(40, 20),
       hook: vec(40, 20).addWithAngle(0, G.ROD_LENGTH),
       hasFish: false,
-      heldFish: null
+      heldFish: null,
     }
   
     bubbles = times(20, () => {
@@ -275,11 +281,11 @@ function update() {
 // Draw all scene (non-gameplay) components
 function drawScene() {
   //Draw Sky
-  color("light_blue");
+  color("light_green");
   line(0, 0, 100, 0, 107);
 
   //Draw Sun
-  color("yellow");
+  color("light_black");
 
   //Draw Clouds
   box(70, 7, 7);
@@ -315,7 +321,7 @@ function drawScene() {
   });
 
   //draw rod handle
-  color("light_yellow");
+  color("red");
   line(12, 40, 40, 20, 2);
   // Draw a boat
   color("black");
@@ -328,26 +334,25 @@ function drawScene() {
  */
 function checkFishCol(fish) {
   const SPRITE = fish.sprite;
-  color("light_red");
+  color("white");
+  //world bottom
+  const bottomLine = line(0, 150, 100, 150, 2);
   const isCollidingWithFish = line(rod.end, rod.hook, 2).isColliding.char[SPRITE];
 
   if(isCollidingWithFish) {
-    rod.angle = rod.end.angleTo(fish.pos);
-    rod.length = Math.sqrt((Math.pow(fish.pos.x - rod.end.x, 2) + (Math.pow(fish.pos.y - rod.end.y, 2))));
-    if(input.isJustPressed) {
-      rod.hasFish = true;
-      rod.heldFish = fish;
-      rod.angle = rod.end.angleTo(fish.pos);
-      rod.length = Math.sqrt((Math.pow(fish.pos.x - rod.end.x, 2) + (Math.pow(fish.pos.y - rod.end.y, 2))));
-    }
-    else if (ticks >= 200){
-      rod.hasFish = false;
-      rod.heldFish = null;
-      rod.length = 0;
-      ticks = 0;
-    }
+    rod.length = 20;
+    G.FAILS++;
     //rod.hasFish = true;
     //rod.heldFish = fish;
+  }
+  if (rod.length >= G.ROD_LENGTH + 135) {
+    rod.hasFish = true;
+    rod.heldFish = fish;
+    //rod.angle = rod.end.angleTo(fish.pos);
+    //rod.length = Math.sqrt((Math.pow(fish.pos.x - rod.end.x, 2) + (Math.pow(fish.pos.y - rod.end.y, 2))));
+  }
+  if (G.FAILS == 3) {
+    end();
   }
 }
 
